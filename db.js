@@ -1,12 +1,4 @@
-// Use better-sqlite3 when available (Koyeb/Linux build environment).
-// Fall back to the built-in node:sqlite on Node 24+ (local Windows dev).
-let Database;
-try {
-  Database = require('better-sqlite3');
-} catch {
-  const { DatabaseSync } = require('node:sqlite');
-  Database = function(path) { return new DatabaseSync(path); };
-}
+const { DatabaseSync } = require('node:sqlite');
 const path = require('path');
 
 const DB_PATH = process.env.DB_PATH || path.join(__dirname, 'worldcup.db');
@@ -14,7 +6,7 @@ let db;
 
 function getDB() {
   if (!db) {
-    db = new Database(DB_PATH);
+    db = new DatabaseSync(DB_PATH);
     db.exec('PRAGMA journal_mode = WAL');
     db.exec('PRAGMA foreign_keys = ON');
   }
