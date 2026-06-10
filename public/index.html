@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LAIkensWeb World Cup 2026</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="login-wrap">
+  <div class="login-card">
+    <div class="login-logo">⚽</div>
+    <h1 class="login-title">LAIkensWeb<br>World Cup 2026</h1>
+    <p class="login-sub">Score predictor — enter your predictions before kickoff!</p>
+
+    <div id="alert" class="alert hidden"></div>
+
+    <div class="tab-group">
+      <button class="tab-btn active" id="tab-login" onclick="showTab('login')">Login</button>
+      <button class="tab-btn"        id="tab-register" onclick="showTab('register')">Register</button>
+    </div>
+
+    <!-- Login form -->
+    <form id="form-login">
+      <div class="form-field">
+        <label>Your name</label>
+        <input type="text" id="login-name" placeholder="e.g. Jan" autocomplete="username" required>
+      </div>
+      <div class="form-field">
+        <label>PIN (4–8 digits)</label>
+        <input type="password" id="login-pin" placeholder="••••" inputmode="numeric" maxlength="8" autocomplete="current-password" required>
+      </div>
+      <button type="submit" class="btn btn-primary w-100">Login</button>
+    </form>
+
+    <!-- Register form -->
+    <form id="form-register" class="hidden">
+      <div class="form-field">
+        <label>Choose a name</label>
+        <input type="text" id="reg-name" placeholder="e.g. Jan" autocomplete="username" required>
+      </div>
+      <div class="form-field">
+        <label>Create a PIN (4–8 digits)</label>
+        <input type="password" id="reg-pin" placeholder="••••" inputmode="numeric" maxlength="8" autocomplete="new-password" required>
+      </div>
+      <div class="form-field">
+        <label>Confirm PIN</label>
+        <input type="password" id="reg-pin2" placeholder="••••" inputmode="numeric" maxlength="8" autocomplete="new-password" required>
+      </div>
+      <div class="form-field">
+        <label>Who will win the World Cup? <span style="color:var(--danger)">*</span></label>
+        <select id="reg-champion" required style="width:100%;padding:.5rem;border:1.5px solid var(--border);border-radius:7px;font-size:.9rem;background:var(--white)">
+          <option value="">Select a country…</option>
+        </select>
+      </div>
+      <button type="submit" class="btn btn-gold w-100">Create account</button>
+    </form>
+
+    <a href="admin.html" class="admin-link">Admin panel →</a>
+  </div>
+</div>
+
+<script src="js/index.js"></script>
+</body>
+</html>

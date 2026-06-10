@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin — LAIkensWeb WC 2026</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- Admin login overlay -->
+<div id="login-overlay" class="login-wrap">
+  <div class="login-card">
+    <div class="login-logo">🔐</div>
+    <h1 class="login-title">Admin Panel</h1>
+    <p class="login-sub">LAIkensWeb World Cup 2026</p>
+    <div id="admin-alert" class="alert hidden"></div>
+    <form id="admin-login-form">
+      <div class="form-field">
+        <label>Password</label>
+        <input type="password" id="admin-password" placeholder="••••••••" autocomplete="current-password" required>
+      </div>
+      <button type="submit" class="btn btn-primary w-100">Login</button>
+    </form>
+  </div>
+</div>
+
+<!-- Admin UI (shown after login) -->
+<div id="admin-ui" class="hidden">
+  <header class="header">
+    <div class="header-logo">⚽ LAIkensWeb WC 2026 — Admin</div>
+    <nav class="header-nav">
+      <a href="matches.html">← Participant view</a>
+    </nav>
+    <button class="btn btn-sm btn-outline" id="btn-admin-logout" style="color:#fff;border-color:rgba(255,255,255,.5)">Logout</button>
+  </header>
+
+  <div class="container">
+    <div id="admin-alert2" class="alert hidden"></div>
+
+    <!-- Stats -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:.75rem;margin-bottom:1.5rem" id="stats-row"></div>
+
+    <!-- Participants -->
+    <div class="card mb-2">
+      <div class="d-flex align-center justify-between mb-1">
+        <h3 style="font-size:.95rem;color:var(--green-dark)">Participants</h3>
+        <button class="btn btn-sm btn-outline" onclick="refreshParticipants()">Refresh</button>
+      </div>
+      <div id="participants-table-wrap" style="overflow-x:auto">
+        <div class="loading-wrap"><div class="spinner"></div></div>
+      </div>
+    </div>
+
+    <!-- Matches -->
+    <div class="card">
+      <div class="d-flex align-center justify-between mb-1">
+        <h3 style="font-size:.95rem;color:var(--green-dark)">Matches</h3>
+        <div class="d-flex gap-1">
+          <button class="btn btn-sm btn-outline" onclick="refreshMatches()">Refresh</button>
+          <button class="btn btn-sm btn-primary" onclick="openAddMatch()">+ Add match</button>
+        </div>
+      </div>
+
+      <!-- Stage filter -->
+      <div class="filter-bar" id="admin-filter-bar" style="margin-bottom:.75rem">
+        <button class="ftab active" data-filter="all"     onclick="adminFilter(this,'all')">All</button>
+        <button class="ftab"        data-filter="group"   onclick="adminFilter(this,'group')">Groups</button>
+        <button class="ftab"        data-filter="r32"     onclick="adminFilter(this,'r32')">R32</button>
+        <button class="ftab"        data-filter="r16"     onclick="adminFilter(this,'r16')">R16</button>
+        <button class="ftab"        data-filter="qf"      onclick="adminFilter(this,'qf')">QF</button>
+        <button class="ftab"        data-filter="sf"      onclick="adminFilter(this,'sf')">SF</button>
+        <button class="ftab"        data-filter="final"   onclick="adminFilter(this,'final')">Final</button>
+        <button class="ftab"        data-filter="pending" onclick="adminFilter(this,'pending')">Needs result</button>
+      </div>
+
+      <div id="matches-table-wrap" style="overflow-x:auto">
+        <div class="loading-wrap"><div class="spinner"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Result modal -->
+<div class="modal-overlay" id="result-modal">
+  <div class="modal">
+    <h3 class="modal-title" id="result-modal-title">Enter result</h3>
+    <input type="hidden" id="result-match-id">
+    <input type="hidden" id="result-match-stage">
+
+    <div class="modal-row">
+      <div class="form-field">
+        <label id="home-label">Home score</label>
+        <input type="number" id="result-home" min="0" max="30" placeholder="0">
+      </div>
+      <div class="form-field">
+        <label id="away-label">Away score</label>
+        <input type="number" id="result-away" min="0" max="30" placeholder="0">
+      </div>
+    </div>
+
+    <div class="form-field" style="margin-bottom:.9rem">
+      <label>First goal — minute (0 = no goals scored)</label>
+      <input type="number" id="result-fgm" min="0" max="120" placeholder="e.g. 23 or 0">
+    </div>
+
+    <div class="form-field" id="winner-field" style="margin-bottom:.9rem;display:none">
+      <label>Winner (for knockout ties after 90 min)</label>
+      <select id="result-winner" style="width:100%;padding:.5rem;border:1.5px solid var(--border);border-radius:7px;font-size:.9rem">
+        <option value="">Score determines winner</option>
+        <option value="home">Home team wins</option>
+        <option value="away">Away team wins</option>
+      </select>
+    </div>
+
+    <!-- Extra time / penalties (knockout only) -->
+    <div id="result-et-section" style="display:none">
+      <hr style="border:none;border-top:1px solid var(--border);margin:.75rem 0">
+      <p class="text-muted" style="font-size:.78rem;margin-bottom:.5rem">Knockout — extra time &amp; penalties</p>
+      <div class="form-field" style="margin-bottom:.6rem">
+        <label class="checkbox-label">
+          <input type="checkbox" id="result-extra-time" onchange="toggleResultPen()">
+          Extra time was played
+        </label>
+      </div>
+      <div id="result-pen-section" style="display:none">
+        <div class="form-field" style="margin-bottom:.6rem">
+          <label class="checkbox-label">
+            <input type="checkbox" id="result-penalties" onchange="toggleResultPenScore()">
+            Match went to a penalty shootout
+          </label>
+        </div>
+        <div id="result-pen-scores" style="display:none">
+          <div class="modal-row">
+            <div class="form-field">
+              <label id="pen-home-label">Home pen goals</label>
+              <input type="number" id="result-pen-home" min="0" max="20" placeholder="0">
+            </div>
+            <div class="form-field">
+              <label id="pen-away-label">Away pen goals</label>
+              <input type="number" id="result-pen-away" min="0" max="20" placeholder="0">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="result-alert" class="alert hidden"></div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('result-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="submitResult()">Save result &amp; calculate points</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit match modal -->
+<div class="modal-overlay" id="edit-modal">
+  <div class="modal">
+    <h3 class="modal-title">Edit match</h3>
+    <input type="hidden" id="edit-match-id">
+    <div class="modal-row">
+      <div class="form-field" style="flex:1">
+        <label>Home team</label>
+        <input type="text" id="edit-home" placeholder="Country">
+      </div>
+      <div class="form-field" style="flex:1">
+        <label>Away team</label>
+        <input type="text" id="edit-away" placeholder="Country">
+      </div>
+    </div>
+    <div class="modal-row">
+      <div class="form-field" style="flex:1">
+        <label>Group</label>
+        <input type="text" id="edit-group" placeholder="e.g. Group A">
+      </div>
+      <div class="form-field" style="flex:1">
+        <label>Stage</label>
+        <select id="edit-stage" style="width:100%;padding:.5rem;border:1.5px solid var(--border);border-radius:7px;font-size:.9rem">
+          <option value="group">Group stage</option>
+          <option value="r32">Round of 32</option>
+          <option value="r16">Round of 16</option>
+          <option value="qf">Quarter-final</option>
+          <option value="sf">Semi-final</option>
+          <option value="third">Third-place play-off</option>
+          <option value="final">Final</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-field" style="margin-bottom:.9rem">
+      <label>Kickoff time (local datetime — stored as-is)</label>
+      <input type="datetime-local" id="edit-kickoff">
+    </div>
+    <div class="form-field" style="margin-bottom:.9rem">
+      <label>Venue</label>
+      <input type="text" id="edit-venue" placeholder="Stadium, City">
+    </div>
+    <div id="edit-alert" class="alert hidden"></div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('edit-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="submitEdit()">Save changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add match modal -->
+<div class="modal-overlay" id="add-modal">
+  <div class="modal">
+    <h3 class="modal-title">Add match</h3>
+    <div class="modal-row">
+      <div class="form-field" style="flex:1">
+        <label>Home team *</label>
+        <input type="text" id="add-home" placeholder="Country">
+      </div>
+      <div class="form-field" style="flex:1">
+        <label>Away team *</label>
+        <input type="text" id="add-away" placeholder="Country">
+      </div>
+    </div>
+    <div class="modal-row">
+      <div class="form-field" style="flex:1">
+        <label>Group</label>
+        <input type="text" id="add-group" placeholder="e.g. Group A">
+      </div>
+      <div class="form-field" style="flex:1">
+        <label>Stage *</label>
+        <select id="add-stage" style="width:100%;padding:.5rem;border:1.5px solid var(--border);border-radius:7px;font-size:.9rem">
+          <option value="group">Group stage</option>
+          <option value="r32">Round of 32</option>
+          <option value="r16">Round of 16</option>
+          <option value="qf">Quarter-final</option>
+          <option value="sf">Semi-final</option>
+          <option value="third">Third-place play-off</option>
+          <option value="final">Final</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-field" style="margin-bottom:.9rem">
+      <label>Kickoff time *</label>
+      <input type="datetime-local" id="add-kickoff">
+    </div>
+    <div class="form-field" style="margin-bottom:.9rem">
+      <label>Venue</label>
+      <input type="text" id="add-venue" placeholder="Stadium, City">
+    </div>
+    <div id="add-alert" class="alert hidden"></div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('add-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="submitAdd()">Add match</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/admin.js"></script>
+</body>
+</html>

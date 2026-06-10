@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Matches — LAIkensWeb WC 2026</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="header">
+  <div class="header-logo">⚽ LAIkensWeb WC 2026</div>
+  <nav class="header-nav">
+    <a href="matches.html" class="active">Matches</a>
+    <a href="leaderboard.html">Leaderboard</a>
+  </nav>
+  <span class="header-user" id="user-display"></span>
+  <button class="btn btn-sm btn-outline" id="btn-logout" style="margin-left:.75rem;color:#fff;border-color:rgba(255,255,255,.5)">Logout</button>
+</header>
+
+<div class="container">
+  <div class="filter-bar" id="filter-bar">
+    <button class="ftab active" data-filter="all">All</button>
+    <button class="ftab" data-filter="open">Open for prediction</button>
+    <button class="ftab" data-filter="mine">My predictions</button>
+    <button class="ftab" data-filter="done">Finished</button>
+  </div>
+
+  <div id="matches-root">
+    <div class="loading-wrap"><div class="spinner"></div> Loading matches…</div>
+  </div>
+</div>
+
+<script src="js/matches.js"></script>
+</body>
+</html>

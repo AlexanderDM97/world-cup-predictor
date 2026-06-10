@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Leaderboard — LAIkensWeb WC 2026</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="header">
+  <div class="header-logo">⚽ LAIkensWeb WC 2026</div>
+  <nav class="header-nav">
+    <a href="matches.html">Matches</a>
+    <a href="leaderboard.html" class="active">Leaderboard</a>
+  </nav>
+  <span class="header-user" id="user-display"></span>
+  <button class="btn btn-sm btn-outline" id="btn-logout" style="margin-left:.75rem;color:#fff;border-color:rgba(255,255,255,.5)">Logout</button>
+</header>
+
+<div class="container">
+  <div class="d-flex align-center justify-between mb-2">
+    <h2 style="font-size:1.2rem;color:var(--green-dark)">🏆 Standings</h2>
+    <span class="text-muted fs-sm" id="last-updated"></span>
+  </div>
+
+  <div class="card" style="padding:0;overflow:hidden">
+    <div id="lb-root">
+      <div class="loading-wrap"><div class="spinner"></div> Loading…</div>
+    </div>
+  </div>
+
+  <div class="mt-2">
+    <div class="card" style="padding:.85rem 1.25rem">
+      <p class="fw-bold mb-1" style="font-size:.85rem">Scoring system</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.3rem .75rem;font-size:.8rem;color:var(--muted)">
+        <span>✅ Exact score</span>                  <span class="fw-bold" style="color:var(--green-dark)">5 pts</span>
+        <span>☑️ Correct winner / draw</span>        <span class="fw-bold" style="color:var(--green-dark)">2 pts</span>
+        <span>🎯 First goal (exact minute)</span>    <span class="fw-bold" style="color:var(--green-dark)">5 pts</span>
+        <span>🔸 First goal ±1 min</span>            <span class="fw-bold" style="color:var(--green-dark)">4 pts</span>
+        <span>🔸 First goal ±2 min</span>            <span class="fw-bold" style="color:var(--green-dark)">3 pts</span>
+        <span>🔸 First goal ±3 min</span>            <span class="fw-bold" style="color:var(--green-dark)">2 pts</span>
+        <span>🔸 First goal ±4 min</span>            <span class="fw-bold" style="color:var(--green-dark)">1 pt</span>
+        <span>⚪ Predicted "no goals" &amp; 0–0</span><span class="fw-bold" style="color:var(--green-dark)">5 pts</span>
+        <span>🥅 Exact penalty shootout score</span> <span class="fw-bold" style="color:var(--green-dark)">10 pts</span>
+        <span>🏆 Champion pick — each team win</span><span class="fw-bold" style="color:var(--green-dark)">+3 pts</span>
+        <span>🥇 Champion pick — wins tournament</span><span class="fw-bold" style="color:var(--green-dark)">+10 bonus</span>
+      </div>
+      <p style="font-size:.75rem;color:var(--muted);margin-top:.6rem">Max per match: <strong>10 pts</strong> (5 score + 5 first goal) · Knockout: up to <strong>20 pts</strong> (+10 penalties)</p>
+    </div>
+  </div>
+</div>
+
+<script src="js/leaderboard.js"></script>
+</body>
+</html>
