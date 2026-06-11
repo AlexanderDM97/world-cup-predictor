@@ -148,6 +148,11 @@ function renderMatchesTable() {
     const kickoff = new Date(m.kickoff_time).toLocaleString('nl-BE', {
       timeZone: 'Europe/Brussels', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit',
     });
+    const deadlineStr = m.prediction_deadline
+      ? `<br><small style="color:#e67e22">🔒 Deadline: ${new Date(m.prediction_deadline).toLocaleString('nl-BE', {
+          timeZone: 'Europe/Brussels', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit',
+        })} CET</small>`
+      : '';
     let resultCell;
     if (m.result_entered) {
       const penStr = m.actual_penalties
@@ -167,7 +172,7 @@ function renderMatchesTable() {
       <tr class="${m.result_entered ? 'result-done' : ''}">
         <td class="text-muted fs-sm">${escHtml(STAGE_LABELS[m.stage] || m.stage)}${m.group_name ? ' · ' + escHtml(m.group_name.replace('Group ', '')) : ''}</td>
         <td><strong>${escHtml(m.home_team)}</strong> vs <strong>${escHtml(m.away_team)}</strong></td>
-        <td class="text-muted fs-sm">${kickoff} CET</td>
+        <td class="text-muted fs-sm">${kickoff} CET${deadlineStr}</td>
         <td>${resultCell}</td>
         <td class="text-muted fs-sm">${m.prediction_count}</td>
         <td>
@@ -290,20 +295,23 @@ function openEdit(id) {
   document.getElementById('edit-stage').value     = m.stage;
   document.getElementById('edit-kickoff').value   = new Date(m.kickoff_time).toISOString().slice(0, 16);
   document.getElementById('edit-venue').value     = m.venue || '';
+  document.getElementById('edit-deadline').value  = m.prediction_deadline ? new Date(m.prediction_deadline).toISOString().slice(0, 16) : '';
   document.getElementById('edit-alert').className = 'alert hidden';
   document.getElementById('edit-modal').classList.add('open');
 }
 window.openEdit = openEdit;
 
 async function submitEdit() {
-  const id   = parseInt(document.getElementById('edit-match-id').value);
+  const id        = parseInt(document.getElementById('edit-match-id').value);
+  const dlVal     = document.getElementById('edit-deadline').value;
   const body = {
-    home_team:    document.getElementById('edit-home').value.trim(),
-    away_team:    document.getElementById('edit-away').value.trim(),
-    group_name:   document.getElementById('edit-group').value.trim() || null,
-    stage:        document.getElementById('edit-stage').value,
-    kickoff_time: new Date(document.getElementById('edit-kickoff').value).toISOString(),
-    venue:        document.getElementById('edit-venue').value.trim() || null,
+    home_team:           document.getElementById('edit-home').value.trim(),
+    away_team:           document.getElementById('edit-away').value.trim(),
+    group_name:          document.getElementById('edit-group').value.trim() || null,
+    stage:               document.getElementById('edit-stage').value,
+    kickoff_time:        new Date(document.getElementById('edit-kickoff').value).toISOString(),
+    venue:               document.getElementById('edit-venue').value.trim() || null,
+    prediction_deadline: dlVal ? new Date(dlVal).toISOString() : null,
   };
   const alertEl = document.getElementById('edit-alert');
   try {
@@ -325,25 +333,28 @@ window.submitEdit = submitEdit;
 
 // ── Add modal ──────────────────────────────────────────────────────────
 function openAddMatch() {
-  document.getElementById('add-home').value    = '';
-  document.getElementById('add-away').value    = '';
-  document.getElementById('add-group').value   = '';
-  document.getElementById('add-stage').value   = 'group';
-  document.getElementById('add-kickoff').value = '';
-  document.getElementById('add-venue').value   = '';
+  document.getElementById('add-home').value     = '';
+  document.getElementById('add-away').value     = '';
+  document.getElementById('add-group').value    = '';
+  document.getElementById('add-stage').value    = 'group';
+  document.getElementById('add-kickoff').value  = '';
+  document.getElementById('add-venue').value    = '';
+  document.getElementById('add-deadline').value = '';
   document.getElementById('add-alert').className = 'alert hidden';
   document.getElementById('add-modal').classList.add('open');
 }
 window.openAddMatch = openAddMatch;
 
 async function submitAdd() {
+  const dlVal = document.getElementById('add-deadline').value;
   const body = {
-    home_team:    document.getElementById('add-home').value.trim(),
-    away_team:    document.getElementById('add-away').value.trim(),
-    group_name:   document.getElementById('add-group').value.trim() || null,
-    stage:        document.getElementById('add-stage').value,
-    kickoff_time: new Date(document.getElementById('add-kickoff').value).toISOString(),
-    venue:        document.getElementById('add-venue').value.trim() || null,
+    home_team:           document.getElementById('add-home').value.trim(),
+    away_team:           document.getElementById('add-away').value.trim(),
+    group_name:          document.getElementById('add-group').value.trim() || null,
+    stage:               document.getElementById('add-stage').value,
+    kickoff_time:        new Date(document.getElementById('add-kickoff').value).toISOString(),
+    venue:               document.getElementById('add-venue').value.trim() || null,
+    prediction_deadline: dlVal ? new Date(dlVal).toISOString() : null,
   };
   const alertEl = document.getElementById('add-alert');
   if (!body.home_team || !body.away_team) {

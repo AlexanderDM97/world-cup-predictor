@@ -1,21 +1,19 @@
-const { DatabaseSync } = require('node:sqlite');
-const path = require('path');
+const { createClient } = require('@libsql/client');
 
-const DB_PATH = process.env.DB_PATH || path.join(__dirname, 'worldcup.db');
-let db;
-
-function getDB() {
-  if (!db) {
-    db = new DatabaseSync(DB_PATH);
-    db.exec('PRAGMA journal_mode = WAL');
-    db.exec('PRAGMA foreign_keys = ON');
-  }
-  return db;
+if (!process.env.TURSO_DATABASE_URL) {
+  console.warn('⚠️  TURSO_DATABASE_URL not set — using local SQLite file (data will be lost on restart)');
 }
 
-function initDB() {
-  const d = getDB();
-  d.exec(`
+const db = createClient({
+  url:       process.env.TURSO_DATABASE_URL || 'file:worldcup.db',
+  authToken: process.env.TURSO_AUTH_TOKEN   || undefined,
+});
+
+async function initDB() {
+  try { await db.execute('PRAGMA journal_mode = WAL'); } catch {}
+  try { await db.execute('PRAGMA foreign_keys = ON');  } catch {}
+
+  await db.execute(`
     CREATE TABLE IF NOT EXISTS participants (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT UNIQUE NOT NULL COLLATE NOCASE,
@@ -23,7 +21,10 @@ function initDB() {
       predicted_champion TEXT,
       champion_points INTEGER DEFAULT 0,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    );
+    )
+  `);
+
+  await db.execute(`
     CREATE TABLE IF NOT EXISTS matches (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       home_team TEXT NOT NULL,
@@ -32,6 +33,7 @@ function initDB() {
       stage TEXT NOT NULL DEFAULT 'group',
       kickoff_time TEXT NOT NULL,
       venue TEXT,
+      prediction_deadline TEXT,
       actual_home_score INTEGER,
       actual_away_score INTEGER,
       actual_first_goal_minute INTEGER,
@@ -41,7 +43,10 @@ function initDB() {
       actual_penalties_home INTEGER,
       actual_penalties_away INTEGER,
       result_entered INTEGER DEFAULT 0
-    );
+    )
+  `);
+
+  await db.execute(`
     CREATE TABLE IF NOT EXISTS predictions (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       participant_id INTEGER NOT NULL REFERENCES participants(id),
@@ -58,41 +63,49 @@ function initDB() {
       points_penalties INTEGER DEFAULT 0,
       submitted_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       UNIQUE(participant_id, match_id)
-    );
+    )
   `);
 
-  runMigrations(d);
+  await runMigrations();
 
-  const count = d.prepare('SELECT COUNT(*) as c FROM matches').get();
-  if (Number(count.c) === 0) {
+  const rs = await db.execute('SELECT COUNT(*) as c FROM matches');
+  if (Number(rs.rows[0].c) === 0) {
     try {
       const seedData = require('./seed-data');
-      const ins = d.prepare(`INSERT INTO matches (home_team,away_team,group_name,stage,kickoff_time,venue) VALUES (?,?,?,?,?,?)`);
-      d.exec('BEGIN');
-      for (const m of seedData) ins.run(m.home, m.away, m.group, m.stage, m.kickoff, m.venue);
-      d.exec('COMMIT');
+      const stmts = seedData.map(m => ({
+        sql: 'INSERT INTO matches (home_team,away_team,group_name,stage,kickoff_time,venue) VALUES (?,?,?,?,?,?)',
+        args: [m.home, m.away, m.group, m.stage, m.kickoff, m.venue],
+      }));
+      await db.batch(stmts, 'write');
       console.log(`Seeded ${seedData.length} matches`);
     } catch (e) {
-      try { d.exec('ROLLBACK'); } catch {}
       console.log('Seed skipped:', e.message);
     }
   }
 }
 
-function runMigrations(d) {
-  const cols = (t) => d.prepare(`PRAGMA table_info(${t})`).all().map(r => r.name);
-  const add  = (t, col, def) => { if (!cols(t).includes(col)) d.exec(`ALTER TABLE ${t} ADD COLUMN ${col} ${def}`); };
-  add('participants', 'predicted_champion',   'TEXT');
-  add('participants', 'champion_points',      'INTEGER DEFAULT 0');
-  add('matches',      'actual_extra_time',    'INTEGER DEFAULT 0');
-  add('matches',      'actual_penalties',     'INTEGER DEFAULT 0');
-  add('matches',      'actual_penalties_home','INTEGER');
-  add('matches',      'actual_penalties_away','INTEGER');
-  add('predictions',  'predicted_extra_time',     'INTEGER DEFAULT 0');
-  add('predictions',  'predicted_penalties',       'INTEGER DEFAULT 0');
-  add('predictions',  'predicted_penalties_home',  'INTEGER');
-  add('predictions',  'predicted_penalties_away',  'INTEGER');
-  add('predictions',  'points_penalties',          'INTEGER DEFAULT 0');
+async function runMigrations() {
+  const cols = async (t) => {
+    const rs = await db.execute({ sql: `PRAGMA table_info(${t})`, args: [] });
+    return rs.rows.map(r => r.name);
+  };
+  const add = async (t, col, def) => {
+    const c = await cols(t);
+    if (!c.includes(col)) await db.execute(`ALTER TABLE ${t} ADD COLUMN ${col} ${def}`);
+  };
+
+  await add('participants', 'predicted_champion',        'TEXT');
+  await add('participants', 'champion_points',           'INTEGER DEFAULT 0');
+  await add('matches',      'prediction_deadline',       'TEXT');
+  await add('matches',      'actual_extra_time',         'INTEGER DEFAULT 0');
+  await add('matches',      'actual_penalties',          'INTEGER DEFAULT 0');
+  await add('matches',      'actual_penalties_home',     'INTEGER');
+  await add('matches',      'actual_penalties_away',     'INTEGER');
+  await add('predictions',  'predicted_extra_time',      'INTEGER DEFAULT 0');
+  await add('predictions',  'predicted_penalties',       'INTEGER DEFAULT 0');
+  await add('predictions',  'predicted_penalties_home',  'INTEGER');
+  await add('predictions',  'predicted_penalties_away',  'INTEGER');
+  await add('predictions',  'points_penalties',          'INTEGER DEFAULT 0');
 }
 
 function calculatePoints(prediction, match) {
@@ -129,20 +142,23 @@ function calculatePoints(prediction, match) {
   return { scorePoints, firstGoalPoints, penaltyPoints };
 }
 
-function recalculateChampionPoints(db) {
-  db.prepare('UPDATE participants SET champion_points = 0').run();
-  const completed = db.prepare('SELECT * FROM matches WHERE result_entered = 1').all();
-  for (const m of completed) {
+async function recalculateChampionPoints() {
+  await db.execute('UPDATE participants SET champion_points = 0');
+  const rs = await db.execute('SELECT * FROM matches WHERE result_entered = 1');
+
+  const updates = [];
+  for (const m of rs.rows) {
     const winner = m.actual_winner === 'home' ? m.home_team
                  : m.actual_winner === 'away' ? m.away_team
                  : Number(m.actual_home_score) > Number(m.actual_away_score) ? m.home_team
                  : Number(m.actual_away_score) > Number(m.actual_home_score) ? m.away_team
                  : null;
     if (!winner) continue;
-    db.prepare('UPDATE participants SET champion_points = champion_points + 3 WHERE predicted_champion = ?').run(winner);
+    updates.push({ sql: 'UPDATE participants SET champion_points = champion_points + 3 WHERE predicted_champion = ?', args: [winner] });
     if (m.stage === 'final')
-      db.prepare('UPDATE participants SET champion_points = champion_points + 10 WHERE predicted_champion = ?').run(winner);
+      updates.push({ sql: 'UPDATE participants SET champion_points = champion_points + 10 WHERE predicted_champion = ?', args: [winner] });
   }
+  if (updates.length > 0) await db.batch(updates, 'write');
 }
 
-module.exports = { getDB, initDB, calculatePoints, recalculateChampionPoints };
+module.exports = { db, initDB, calculatePoints, recalculateChampionPoints };

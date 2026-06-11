@@ -71,7 +71,8 @@ async function load() {
 
 function matchStatus(m) {
   if (m.result_entered) return 'done';
-  if (new Date() >= new Date(m.kickoff_time)) return 'locked';
+  const deadline = m.prediction_deadline || m.kickoff_time;
+  if (new Date() >= new Date(deadline)) return 'locked';
   return 'open';
 }
 
@@ -134,6 +135,9 @@ function renderMatch(m) {
     locked: '<span class="status-badge st-locked">Locked</span>',
     done:   '<span class="status-badge st-done">Finished</span>',
   }[status];
+  const deadlineLine = m.prediction_deadline && m.prediction_deadline !== m.kickoff_time
+    ? ` · <span class="text-muted fs-sm" style="color:#e67e22">🔒 Deadline: ${isCET(new Date(m.prediction_deadline))}</span>`
+    : '';
 
   // Actual score display
   let scoreHTML = '';
@@ -247,7 +251,7 @@ function renderMatch(m) {
     <div class="match-card" id="match-${m.id}">
       <div class="match-meta">
         <div class="match-meta-left">${stageBadge} ${m.group_name ? `<span class="text-muted">${m.group_name}</span>` : ''}</div>
-        <div class="match-meta-right">${statusBadge} <span>${kickoffStr}</span>${m.venue ? ` · <span class="text-muted fs-sm">${m.venue}</span>` : ''}</div>
+        <div class="match-meta-right">${statusBadge} <span>${kickoffStr}</span>${deadlineLine}${m.venue ? ` · <span class="text-muted fs-sm">${m.venue}</span>` : ''}</div>
       </div>
       <div class="match-body">
         <div class="teams-row">

@@ -194,6 +194,11 @@
       <label>Venue</label>
       <input type="text" id="edit-venue" placeholder="Stadium, City">
     </div>
+    <div class="form-field" style="margin-bottom:.9rem">
+      <label>Prediction deadline <span class="text-muted" style="font-weight:400;font-size:.8rem">(optional — defaults to kickoff time)</span></label>
+      <input type="datetime-local" id="edit-deadline">
+      <button type="button" onclick="document.getElementById('edit-deadline').value=''" style="margin-top:.3rem;font-size:.75rem;padding:.2rem .6rem;border:1px solid var(--border);border-radius:5px;background:none;cursor:pointer;color:var(--muted)">✕ Clear deadline</button>
+    </div>
     <div id="edit-alert" class="alert hidden"></div>
     <div class="modal-footer">
       <button class="btn btn-outline" onclick="closeModal('edit-modal')">Cancel</button>
@@ -241,6 +246,10 @@
     <div class="form-field" style="margin-bottom:.9rem">
       <label>Venue</label>
       <input type="text" id="add-venue" placeholder="Stadium, City">
+    </div>
+    <div class="form-field" style="margin-bottom:.9rem">
+      <label>Prediction deadline <span class="text-muted" style="font-weight:400;font-size:.8rem">(optional — defaults to kickoff time)</span></label>
+      <input type="datetime-local" id="add-deadline">
     </div>
     <div id="add-alert" class="alert hidden"></div>
     <div class="modal-footer">
