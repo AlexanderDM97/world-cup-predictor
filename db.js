@@ -126,9 +126,11 @@ function calculatePoints(prediction, match) {
   }
 
   let firstGoalPoints = 0;
-  if (afg === 0)       firstGoalPoints = pfg === 0 ? 5 : 0;
-  else if (pfg === 0)  firstGoalPoints = 0;
-  else                 firstGoalPoints = Math.max(0, 5 - Math.abs(pfg - afg));
+  if (scorePoints > 0) {
+    if (afg === 0)       firstGoalPoints = pfg === 0 ? 5 : 0;
+    else if (pfg === 0)  firstGoalPoints = 0;
+    else                 firstGoalPoints = Math.max(0, 5 - Math.abs(pfg - afg));
+  }
 
   let penaltyPoints = 0;
   if (match.actual_penalties && prediction.predicted_penalties) {
