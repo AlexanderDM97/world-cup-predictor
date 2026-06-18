@@ -63,6 +63,7 @@ async function load() {
     const preds = await pRes.json();
     preds.forEach(p => { myPredictions[p.match_id] = p; });
     render();
+    scrollToToday();
   } catch {
     document.getElementById('matches-root').innerHTML =
       '<div class="loading-wrap text-muted">Failed to load matches. Is the server running?</div>';
@@ -112,7 +113,7 @@ function render() {
     const dk = cetDateKey(m.kickoff_time);
     if (dk !== curDate) {
       if (curDate !== null) html += '</div>';
-      html += `<div class="stage-section"><div class="stage-heading date-heading">${cetDateLabel(m.kickoff_time)}</div>`;
+      html += `<div class="stage-section" data-date="${dk}"><div class="stage-heading date-heading">${cetDateLabel(m.kickoff_time)}</div>`;
       curDate = dk;
     }
     html += renderMatch(m);
@@ -197,7 +198,8 @@ function renderMatch(m) {
     const ptScore = pred.points_score;
     const ptFgm   = pred.points_first_goal;
     const ptPen   = pred.points_penalties || 0;
-    const total   = (ptScore || 0) + (ptFgm || 0) + ptPen;
+    const ptEt    = pred.points_et || 0;
+    const total   = (ptScore || 0) + (ptFgm || 0) + ptPen + ptEt;
 
     let etDisplay = '';
     if (isKnockout) {
@@ -217,6 +219,7 @@ function renderMatch(m) {
         <div class="pred-pts">
           ${scoreChip}
           <span class="chip chip-fgm">⚽ ${ptFgm ?? '—'} pts</span>
+          ${ptEt > 0 ? `<span class="chip chip-et">⏱ ${ptEt} pt</span>` : ''}
           ${ptPen > 0 ? `<span class="chip chip-pen">🥅 ${ptPen} pts</span>` : ''}
           <span class="chip chip-total">= ${total} pts</span>
         </div>`;
@@ -433,5 +436,18 @@ document.getElementById('filter-bar').addEventListener('click', (e) => {
   currentFilter = btn.dataset.filter;
   render();
 });
+
+function scrollToToday() {
+  const todayKey = cetDateKey(new Date().toISOString());
+  let el = document.querySelector(`[data-date="${todayKey}"]`);
+  if (!el) {
+    const all = [...document.querySelectorAll('[data-date]')];
+    el = all.find(s => s.dataset.date >= todayKey) || null;
+  }
+  if (el) {
+    const top = el.getBoundingClientRect().top + window.scrollY - 70;
+    window.scrollTo({ top, behavior: 'smooth' });
+  }
+}
 
 load();

@@ -85,10 +85,10 @@ router.post('/matches/:id/result', authenticateAdmin, async (req, res, next) => 
 
     if (predictions.length > 0) {
       const stmts = predictions.map(pred => {
-        const { scorePoints, firstGoalPoints, penaltyPoints } = calculatePoints(pred, updated);
+        const { scorePoints, firstGoalPoints, penaltyPoints, etPoints } = calculatePoints(pred, updated);
         return {
-          sql:  'UPDATE predictions SET points_score=?,points_first_goal=?,points_penalties=? WHERE id=?',
-          args: [scorePoints, firstGoalPoints, penaltyPoints, pred.id],
+          sql:  'UPDATE predictions SET points_score=?,points_first_goal=?,points_penalties=?,points_et=? WHERE id=?',
+          args: [scorePoints, firstGoalPoints, penaltyPoints, etPoints, pred.id],
         };
       });
       await db.batch(stmts, 'write');
@@ -114,8 +114,8 @@ router.get('/participants', authenticateAdmin, async (req, res, next) => {
     const rs = await db.execute(`
       SELECT p.id, p.name, p.predicted_champion, p.champion_points, p.created_at,
              COUNT(pr.id) as predictions_count,
-             COALESCE(SUM(COALESCE(pr.points_score,0)+COALESCE(pr.points_first_goal,0)+COALESCE(pr.points_penalties,0)),0) as prediction_points,
-             COALESCE(SUM(COALESCE(pr.points_score,0)+COALESCE(pr.points_first_goal,0)+COALESCE(pr.points_penalties,0)),0) + COALESCE(p.champion_points,0) as total_points
+             COALESCE(SUM(COALESCE(pr.points_score,0)+COALESCE(pr.points_first_goal,0)+COALESCE(pr.points_penalties,0)+COALESCE(pr.points_et,0)),0) as prediction_points,
+             COALESCE(SUM(COALESCE(pr.points_score,0)+COALESCE(pr.points_first_goal,0)+COALESCE(pr.points_penalties,0)+COALESCE(pr.points_et,0)),0) + COALESCE(p.champion_points,0) as total_points
       FROM participants p LEFT JOIN predictions pr ON pr.participant_id=p.id
       GROUP BY p.id ORDER BY total_points DESC
     `);

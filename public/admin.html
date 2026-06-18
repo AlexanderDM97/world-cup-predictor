@@ -161,11 +161,11 @@
     <div class="modal-row">
       <div class="form-field" style="flex:1">
         <label>Home team</label>
-        <input type="text" id="edit-home" placeholder="Country">
+        <input type="text" id="edit-home" placeholder="Country" list="teams-list" autocomplete="off">
       </div>
       <div class="form-field" style="flex:1">
         <label>Away team</label>
-        <input type="text" id="edit-away" placeholder="Country">
+        <input type="text" id="edit-away" placeholder="Country" list="teams-list" autocomplete="off">
       </div>
     </div>
     <div class="modal-row">
@@ -214,11 +214,11 @@
     <div class="modal-row">
       <div class="form-field" style="flex:1">
         <label>Home team *</label>
-        <input type="text" id="add-home" placeholder="Country">
+        <input type="text" id="add-home" placeholder="Country" list="teams-list" autocomplete="off">
       </div>
       <div class="form-field" style="flex:1">
         <label>Away team *</label>
-        <input type="text" id="add-away" placeholder="Country">
+        <input type="text" id="add-away" placeholder="Country" list="teams-list" autocomplete="off">
       </div>
     </div>
     <div class="modal-row">
@@ -258,6 +258,57 @@
     </div>
   </div>
 </div>
+
+<datalist id="teams-list">
+  <option value="Algeria">
+  <option value="Argentina">
+  <option value="Australia">
+  <option value="Austria">
+  <option value="Belgium">
+  <option value="Bosnia & Herzegovina">
+  <option value="Brazil">
+  <option value="Canada">
+  <option value="Cape Verde">
+  <option value="Colombia">
+  <option value="Croatia">
+  <option value="Curacao">
+  <option value="Czechia">
+  <option value="DR Congo">
+  <option value="Ecuador">
+  <option value="Egypt">
+  <option value="England">
+  <option value="France">
+  <option value="Germany">
+  <option value="Ghana">
+  <option value="Haiti">
+  <option value="Iran">
+  <option value="Iraq">
+  <option value="Ivory Coast">
+  <option value="Japan">
+  <option value="Jordan">
+  <option value="Mexico">
+  <option value="Morocco">
+  <option value="Netherlands">
+  <option value="New Zealand">
+  <option value="Norway">
+  <option value="Panama">
+  <option value="Paraguay">
+  <option value="Portugal">
+  <option value="Qatar">
+  <option value="Saudi Arabia">
+  <option value="Scotland">
+  <option value="Senegal">
+  <option value="South Africa">
+  <option value="South Korea">
+  <option value="Spain">
+  <option value="Sweden">
+  <option value="Switzerland">
+  <option value="Tunisia">
+  <option value="Türkiye">
+  <option value="Uruguay">
+  <option value="USA">
+  <option value="Uzbekistan">
+</datalist>
 
 <script src="js/admin.js"></script>
 </body>

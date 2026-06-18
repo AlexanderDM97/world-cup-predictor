@@ -106,6 +106,7 @@ async function runMigrations() {
   await add('predictions',  'predicted_penalties_home',  'INTEGER');
   await add('predictions',  'predicted_penalties_away',  'INTEGER');
   await add('predictions',  'points_penalties',          'INTEGER DEFAULT 0');
+  await add('predictions',  'points_et',                 'INTEGER DEFAULT 0');
 }
 
 function calculatePoints(prediction, match) {
@@ -141,7 +142,18 @@ function calculatePoints(prediction, match) {
     if (pph === aph && ppa === apa) penaltyPoints = 10;
   }
 
-  return { scorePoints, firstGoalPoints, penaltyPoints };
+  // 1 point for correctly predicting match timeline (FT / AET / PEN) — knockout only, winner must be correct
+  const KNOCKOUT = new Set(['r32', 'r16', 'qf', 'sf', 'third', 'final']);
+  let etPoints = 0;
+  if (KNOCKOUT.has(match.stage) && scorePoints > 0) {
+    const predTL   = !Number(prediction.predicted_extra_time) ? 'ft'
+                   : !Number(prediction.predicted_penalties)  ? 'aet' : 'pen';
+    const actualTL = !Number(match.actual_extra_time) ? 'ft'
+                   : !Number(match.actual_penalties)  ? 'aet' : 'pen';
+    if (predTL === actualTL) etPoints = 1;
+  }
+
+  return { scorePoints, firstGoalPoints, penaltyPoints, etPoints };
 }
 
 async function recalculateChampionPoints() {

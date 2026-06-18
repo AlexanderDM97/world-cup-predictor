@@ -407,5 +407,62 @@ body {
 .lb-champion-cell { font-size: .82rem; white-space: nowrap; }
 .chip-pen { background: #fce4ec; color: #b71c1c; }
 
+/* ── ET chip ──────────────────────────────────────── */
+.chip-et { background: #e8f5e9; color: #2e7d32; }
+
+/* ── Leaderboard table scroll wrapper ─────────────── */
+.lb-scroll-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.lb-table { min-width: 700px; }
+
+/* ── Detail modal ─────────────────────────────────── */
+.detail-modal-inner {
+  max-width: 860px;
+  width: 95vw;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+}
+#detail-content {
+  overflow-y: auto;
+  flex: 1;
+}
+.detail-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: .82rem;
+  min-width: 620px;
+}
+.detail-table th {
+  background: var(--green);
+  color: #fff;
+  padding: .5rem .75rem;
+  text-align: left;
+  font-size: .75rem;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  white-space: nowrap;
+}
+.detail-table td {
+  padding: .5rem .75rem;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+.detail-table tr:hover td { background: #f4faf6; }
+.detail-table .pending { color: var(--muted); font-style: italic; }
+.detail-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.detail-champion-row {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  padding: .6rem .75rem;
+  background: #fffde7;
+  border-top: 2px solid var(--gold);
+  font-size: .85rem;
+}
+
+/* ── Leaderboard row clickable ────────────────────── */
+.lb-table tbody tr { cursor: pointer; }
+.lb-table tbody tr:hover td { background: #e8f5e9; }
+
 /* ── Login title line break ───────────────────────── */
 .login-title br { display: block; margin-bottom: .15rem; }

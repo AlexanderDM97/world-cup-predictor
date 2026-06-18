@@ -30,6 +30,8 @@
     </div>
   </div>
 
+  <p class="text-muted fs-sm" style="margin-top:.5rem;text-align:center">Click any name to see their full points breakdown</p>
+
   <div class="mt-2">
     <div class="card" style="padding:.85rem 1.25rem">
       <p class="fw-bold mb-1" style="font-size:.85rem">Scoring system</p>
@@ -43,11 +45,23 @@
         <span>🔸 First goal ±4 min</span>            <span class="fw-bold" style="color:var(--green-dark)">1 pt</span>
         <span>⚪ Predicted "no goals" &amp; 0–0</span><span class="fw-bold" style="color:var(--green-dark)">5 pts</span>
         <span>🥅 Exact penalty shootout score</span> <span class="fw-bold" style="color:var(--green-dark)">10 pts</span>
+        <span>⏱ Correct timeline (FT/AET/PEN)</span> <span class="fw-bold" style="color:var(--green-dark)">1 pt</span>
         <span>🏆 Champion pick — each team win</span><span class="fw-bold" style="color:var(--green-dark)">+3 pts</span>
         <span>🥇 Champion pick — wins tournament</span><span class="fw-bold" style="color:var(--green-dark)">+10 bonus</span>
       </div>
-      <p style="font-size:.75rem;color:var(--muted);margin-top:.6rem">Max per match: <strong>10 pts</strong> (5 score + 5 first goal) · Knockout: up to <strong>20 pts</strong> (+10 penalties)</p>
+      <p style="font-size:.75rem;color:var(--muted);margin-top:.6rem">Max per match: <strong>10 pts</strong> · Knockout: up to <strong>21 pts</strong> (+10 penalties, +1 timeline) · Timeline point requires correct winner</p>
     </div>
+  </div>
+</div>
+
+<!-- Detail modal -->
+<div class="modal-overlay" id="detail-modal">
+  <div class="modal detail-modal-inner">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1rem">
+      <h3 class="modal-title" id="detail-title" style="margin:0"></h3>
+      <button onclick="closeDetail()" style="background:none;border:none;font-size:1.4rem;cursor:pointer;color:var(--muted);line-height:1;padding:0 .25rem">✕</button>
+    </div>
+    <div id="detail-content"><div class="loading-wrap"><div class="spinner"></div></div></div>
   </div>
 </div>
 
