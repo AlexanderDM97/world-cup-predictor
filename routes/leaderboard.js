@@ -43,7 +43,7 @@ router.get('/:id/detail', authenticateParticipant, async (req, res, next) => {
                    m.actual_extra_time, m.actual_penalties,
                    m.actual_penalties_home, m.actual_penalties_away
             FROM predictions p JOIN matches m ON p.match_id = m.id
-            WHERE p.participant_id = ?
+            WHERE p.participant_id = ? AND m.result_entered = 1
             ORDER BY m.kickoff_time ASC`,
       args: [req.params.id],
     });
