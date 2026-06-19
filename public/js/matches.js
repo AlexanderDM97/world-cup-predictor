@@ -10,28 +10,32 @@ document.getElementById('btn-logout').onclick = () => {
   window.location.href = 'index.html';
 };
 
-const FLAGS = {
-  'Algeria':'🇩🇿','Argentina':'🇦🇷','Australia':'🇦🇺','Austria':'🇦🇹',
-  'Belgium':'🇧🇪','Bosnia & Herz.':'🇧🇦','Bosnia & Herzegovina':'🇧🇦','Brazil':'🇧🇷',
-  'Canada':'🇨🇦','Cape Verde':'🇨🇻','Colombia':'🇨🇴','Croatia':'🇭🇷','Curacao':'🇨🇼',
-  'Czechia':'🇨🇿','Czech Republic':'🇨🇿',
-  'DR Congo':'🇨🇩',
-  'Ecuador':'🇪🇨','Egypt':'🇪🇬','England':'🏴󠁧󠁢󠁥󠁮󠁧󠁿',
-  'France':'🇫🇷',
-  'Germany':'🇩🇪','Ghana':'🇬🇭',
-  'Haiti':'🇭🇹',
-  'Iran':'🇮🇷','Iraq':'🇮🇶','Ivory Coast':'🇨🇮',
-  'Japan':'🇯🇵','Jordan':'🇯🇴',
-  'Mexico':'🇲🇽','Morocco':'🇲🇦',
-  'Netherlands':'🇳🇱','New Zealand':'🇳🇿','Norway':'🇳🇴',
-  'Panama':'🇵🇦','Paraguay':'🇵🇾','Portugal':'🇵🇹',
-  'Qatar':'🇶🇦',
-  'Saudi Arabia':'🇸🇦','Scotland':'🏴󠁧󠁢󠁳󠁣󠁴󠁿','Senegal':'🇸🇳',
-  'South Africa':'🇿🇦','South Korea':'🇰🇷','Spain':'🇪🇸','Sweden':'🇸🇪','Switzerland':'🇨🇭',
-  'Tunisia':'🇹🇳','Turkiye':'🇹🇷','Türkiye':'🇹🇷','Turkey':'🇹🇷',
-  'Uruguay':'🇺🇾','USA':'🇺🇸','Uzbekistan':'🇺🇿',
+const FLAG_ISO = {
+  'Algeria':'dz','Argentina':'ar','Australia':'au','Austria':'at',
+  'Belgium':'be','Bosnia & Herz.':'ba','Bosnia & Herzegovina':'ba','Brazil':'br',
+  'Canada':'ca','Cape Verde':'cv','Colombia':'co','Croatia':'hr','Curacao':'cw',
+  'Czechia':'cz','Czech Republic':'cz',
+  'DR Congo':'cd',
+  'Ecuador':'ec','Egypt':'eg','England':'gb-eng',
+  'France':'fr',
+  'Germany':'de','Ghana':'gh',
+  'Haiti':'ht',
+  'Iran':'ir','Iraq':'iq','Ivory Coast':'ci',
+  'Japan':'jp','Jordan':'jo',
+  'Mexico':'mx','Morocco':'ma',
+  'Netherlands':'nl','New Zealand':'nz','Norway':'no',
+  'Panama':'pa','Paraguay':'py','Portugal':'pt',
+  'Qatar':'qa',
+  'Saudi Arabia':'sa','Scotland':'gb-sct','Senegal':'sn',
+  'South Africa':'za','South Korea':'kr','Spain':'es','Sweden':'se','Switzerland':'ch',
+  'Tunisia':'tn','Turkiye':'tr','Türkiye':'tr','Turkey':'tr',
+  'Uruguay':'uy','USA':'us','Uzbekistan':'uz',
 };
-function flag(team) { return FLAGS[team] || '🏳️'; }
+function flag(team) {
+  const iso = FLAG_ISO[team];
+  if (!iso) return '';
+  return `<img src="https://flagcdn.com/40x30/${iso}.png" alt="${team}" style="width:40px;height:30px;display:block;margin:0 auto 4px">`;
+}
 
 const STAGE_LABELS = {
   group: 'Group Stage', r32: 'Round of 32', r16: 'Round of 16',
@@ -88,7 +92,6 @@ function getFiltered() {
 }
 
 function cetDateKey(isoStr) {
-  // Returns sortable YYYY-MM-DD in CET timezone
   return new Date(isoStr).toLocaleDateString('sv-SE', { timeZone: 'Europe/Brussels' });
 }
 
@@ -162,39 +165,33 @@ function renderMatch(m) {
   // Prediction area
   let predHTML = '';
   if (status === 'open' && !pred) {
-    // Show input form (not yet submitted)
     const etFields = isKnockout ? `
-      <div class="pf-et-row">
+      <div id="ko-et-${m.id}" class="pf-et-row">
         <label class="checkbox-label">
-          <input type="checkbox" name="extra_time" onchange="togglePenRow(this,${m.id})">
-          Extra time?
+          <input type="checkbox" name="extra_time"> After extra time?
         </label>
       </div>
-      <div class="pf-pen-row hidden" id="pen-row-${m.id}">
-        <label class="checkbox-label">
-          <input type="checkbox" name="penalties" onchange="togglePenScore(this,${m.id})">
-          Penalties?
-        </label>
-      </div>
-      <div class="pf-pen-scores hidden" id="pen-scores-${m.id}">
-        <div class="pf-group"><label>Pen<small>(home)</small></label><input type="number" min="0" max="20" name="pen_home" placeholder="0"></div>
-        <span class="colon">:</span>
-        <div class="pf-group"><label>Pen<small>(away)</small></label><input type="number" min="0" max="20" name="pen_away" placeholder="0"></div>
+      <div id="ko-pen-${m.id}" class="pf-pen-row hidden">
+        <p class="text-muted" style="font-size:.78rem;margin:.2rem 0 .4rem">Penalties — enter expected shootout score:</p>
+        <div class="pf-pen-scores">
+          <div class="pf-group"><label>Pen<small>(home)</small></label><input type="number" min="0" max="20" name="pen_home" placeholder="0"></div>
+          <span class="colon">:</span>
+          <div class="pf-group"><label>Pen<small>(away)</small></label><input type="number" min="0" max="20" name="pen_away" placeholder="0"></div>
+        </div>
       </div>` : '';
 
     predHTML = `
       <div class="pred-area">
-        <form class="pred-form" onsubmit="savePrediction(event,${m.id})">
-          <div class="pf-group"><label>${m.home_team.split(' ')[0]}</label><input type="number" min="0" max="30" name="home" placeholder="0" required></div>
+        <form class="pred-form" data-match="${m.id}" onsubmit="savePrediction(event,${m.id})">
+          <div class="pf-group"><label>${m.home_team.split(' ')[0]}</label><input type="number" min="0" max="30" name="home" placeholder="0" required${isKnockout ? ` oninput="updateKOForm(${m.id})"` : ''}></div>
           <span class="colon">:</span>
-          <div class="pf-group"><label>${m.away_team.split(' ')[0]}</label><input type="number" min="0" max="30" name="away" placeholder="0" required></div>
+          <div class="pf-group"><label>${m.away_team.split(' ')[0]}</label><input type="number" min="0" max="30" name="away" placeholder="0" required${isKnockout ? ` oninput="updateKOForm(${m.id})"` : ''}></div>
           <div class="pf-group fgm"><label>1st goal<small>(0=none)</small></label><input type="number" min="0" max="120" name="fgm" placeholder="0–120" required></div>
           ${etFields}
           <button type="submit" class="btn btn-primary btn-sm" style="align-self:flex-end">Save</button>
         </form>
       </div>`;
   } else if (pred) {
-    // Locked: show what was predicted
     const ptScore = pred.points_score;
     const ptFgm   = pred.points_first_goal;
     const ptPen   = pred.points_penalties || 0;
@@ -212,7 +209,7 @@ function renderMatch(m) {
 
     let ptsHTML = '';
     if (status === 'done') {
-      const scoreChip = ptScore === 5
+      const scoreChip = (ptScore === 5 || ptScore === 10)
         ? `<span class="chip chip-gold">⭐ ${ptScore} pts</span>`
         : `<span class="chip chip-score">${ptScore ?? '—'} pts</span>`;
       ptsHTML = `
@@ -241,7 +238,6 @@ function renderMatch(m) {
     predHTML = `<div class="pred-area"><p class="text-muted fs-sm" style="padding:.35rem 0">⏱ Deadline passed — no prediction submitted</p></div>`;
   }
 
-  // Others section
   const othersSection = canSeeOthers ? `
     <div class="others-section">
       <button class="btn btn-sm btn-outline others-toggle-btn" onclick="toggleOthers(${m.id})">
@@ -275,40 +271,47 @@ function renderMatch(m) {
     </div>`;
 }
 
-// ── Knockout form helpers ──────────────────────────────────────────────
+// ── Dynamic knockout form ──────────────────────────────────────────────
 
-function togglePenRow(cb, matchId) {
-  const row = document.getElementById(`pen-row-${matchId}`);
-  row.classList.toggle('hidden', !cb.checked);
-  if (!cb.checked) {
-    const penCb = document.querySelector(`#pen-row-${matchId} input[name="penalties"]`);
-    if (penCb) penCb.checked = false;
-    togglePenScore({ checked: false }, matchId);
-  }
+function updateKOForm(matchId) {
+  const form = document.querySelector(`.pred-form[data-match="${matchId}"]`);
+  if (!form) return;
+  const h = parseInt(form.querySelector('[name="home"]').value);
+  const a = parseInt(form.querySelector('[name="away"]').value);
+  const isDraw = !isNaN(h) && !isNaN(a) && h === a;
+  const etSection  = document.getElementById(`ko-et-${matchId}`);
+  const penSection = document.getElementById(`ko-pen-${matchId}`);
+  if (etSection)  etSection.classList.toggle('hidden', isDraw);
+  if (penSection) penSection.classList.toggle('hidden', !isDraw);
+  if (!isDraw && form.extra_time) form.extra_time.checked = false;
 }
-window.togglePenRow = togglePenRow;
-
-function togglePenScore(cb, matchId) {
-  document.getElementById(`pen-scores-${matchId}`).classList.toggle('hidden', !cb.checked);
-}
-window.togglePenScore = togglePenScore;
+window.updateKOForm = updateKOForm;
 
 // ── Save prediction ────────────────────────────────────────────────────
 
 async function savePrediction(e, matchId) {
   e.preventDefault();
-  const form = e.target;
-  const btn  = form.querySelector('button[type=submit]');
+  const form  = e.target;
+  const btn   = form.querySelector('button[type=submit]');
   const match = allMatches.find(m => m.id === matchId);
   const isKnockout = KNOCKOUT_STAGES.has(match.stage);
 
   const home = parseInt(form.home.value);
   const away = parseInt(form.away.value);
   const fgm  = parseInt(form.fgm.value);
-  const extraTime = isKnockout && form.extra_time ? form.extra_time.checked : false;
-  const penalties = isKnockout && extraTime && form.penalties ? form.penalties.checked : false;
-  const penHome   = penalties && form.pen_home ? parseInt(form.pen_home.value) || 0 : null;
-  const penAway   = penalties && form.pen_away ? parseInt(form.pen_away.value) || 0 : null;
+  const isDraw = !isNaN(home) && !isNaN(away) && home === away;
+
+  let extraTime = false, penalties = false, penHome = null, penAway = null;
+  if (isKnockout) {
+    if (isDraw) {
+      extraTime = true;
+      penalties = true;
+      penHome = form.pen_home ? (parseInt(form.pen_home.value) || 0) : 0;
+      penAway = form.pen_away ? (parseInt(form.pen_away.value) || 0) : 0;
+    } else {
+      extraTime = form.extra_time ? form.extra_time.checked : false;
+    }
+  }
 
   btn.disabled    = true;
   btn.textContent = 'Saving…';
@@ -324,7 +327,6 @@ async function savePrediction(e, matchId) {
     const data = await res.json();
     if (!res.ok) { alert(data.error); btn.disabled = false; btn.textContent = 'Save'; return; }
 
-    // Refresh all my predictions and re-render this card
     const pRes = await fetch('/api/predictions/my', { headers: { Authorization: `Bearer ${token}` } });
     const preds = await pRes.json();
     myPredictions = {};
@@ -333,7 +335,6 @@ async function savePrediction(e, matchId) {
     const card = document.getElementById(`match-${matchId}`);
     if (card && match) card.outerHTML = renderMatch(match);
 
-    // Auto-load others after submission
     loadOthers(matchId, true);
   } catch {
     alert('Network error');
@@ -361,7 +362,6 @@ async function loadOthers(matchId, autoOpen) {
 
   if (autoOpen) {
     content.classList.remove('hidden');
-    // Update button text
     const btn = content.closest('.others-section')?.querySelector('.others-toggle-btn');
     if (btn) btn.textContent = '👥 Hide predictions';
   }

@@ -10,27 +10,33 @@ document.getElementById('btn-logout').onclick = () => {
   window.location.href = 'index.html';
 };
 
-const FLAGS = {
-  'Algeria':'🇩🇿','Argentina':'🇦🇷','Australia':'🇦🇺','Austria':'🇦🇹',
-  'Belgium':'🇧🇪','Bosnia & Herz.':'🇧🇦','Bosnia & Herzegovina':'🇧🇦','Brazil':'🇧🇷',
-  'Canada':'🇨🇦','Cape Verde':'🇨🇻','Colombia':'🇨🇴','Croatia':'🇭🇷','Curacao':'🇨🇼',
-  'Czechia':'🇨🇿','Czech Republic':'🇨🇿',
-  'DR Congo':'🇨🇩',
-  'Ecuador':'🇪🇨','Egypt':'🇪🇬','England':'🏴󠁧󠁢󠁥󠁮󠁧󠁿',
-  'France':'🇫🇷',
-  'Germany':'🇩🇪','Ghana':'🇬🇭',
-  'Haiti':'🇭🇹',
-  'Iran':'🇮🇷','Iraq':'🇮🇶','Ivory Coast':'🇨🇮',
-  'Japan':'🇯🇵','Jordan':'🇯🇴',
-  'Mexico':'🇲🇽','Morocco':'🇲🇦',
-  'Netherlands':'🇳🇱','New Zealand':'🇳🇿','Norway':'🇳🇴',
-  'Panama':'🇵🇦','Paraguay':'🇵🇾','Portugal':'🇵🇹',
-  'Qatar':'🇶🇦',
-  'Saudi Arabia':'🇸🇦','Scotland':'🏴󠁧󠁢󠁳󠁣󠁴󠁿','Senegal':'🇸🇳',
-  'South Africa':'🇿🇦','South Korea':'🇰🇷','Spain':'🇪🇸','Sweden':'🇸🇪','Switzerland':'🇨🇭',
-  'Tunisia':'🇹🇳','Turkiye':'🇹🇷','Türkiye':'🇹🇷',
-  'Uruguay':'🇺🇾','USA':'🇺🇸','Uzbekistan':'🇺🇿',
+const FLAG_ISO = {
+  'Algeria':'dz','Argentina':'ar','Australia':'au','Austria':'at',
+  'Belgium':'be','Bosnia & Herz.':'ba','Bosnia & Herzegovina':'ba','Brazil':'br',
+  'Canada':'ca','Cape Verde':'cv','Colombia':'co','Croatia':'hr','Curacao':'cw',
+  'Czechia':'cz','Czech Republic':'cz',
+  'DR Congo':'cd',
+  'Ecuador':'ec','Egypt':'eg','England':'gb-eng',
+  'France':'fr',
+  'Germany':'de','Ghana':'gh',
+  'Haiti':'ht',
+  'Iran':'ir','Iraq':'iq','Ivory Coast':'ci',
+  'Japan':'jp','Jordan':'jo',
+  'Mexico':'mx','Morocco':'ma',
+  'Netherlands':'nl','New Zealand':'nz','Norway':'no',
+  'Panama':'pa','Paraguay':'py','Portugal':'pt',
+  'Qatar':'qa',
+  'Saudi Arabia':'sa','Scotland':'gb-sct','Senegal':'sn',
+  'South Africa':'za','South Korea':'kr','Spain':'es','Sweden':'se','Switzerland':'ch',
+  'Tunisia':'tn','Turkiye':'tr','Türkiye':'tr',
+  'Uruguay':'uy','USA':'us','Uzbekistan':'uz',
 };
+function flagImg(country, size) {
+  const iso = FLAG_ISO[country];
+  if (!iso) return '';
+  const s = size || '20x15';
+  return `<img src="https://flagcdn.com/${s}/${iso}.png" alt="${country}" style="vertical-align:middle;margin-right:3px">`;
+}
 
 const STAGE_LABELS = {
   group: 'Group', r32: 'R32', r16: 'R16',
@@ -65,7 +71,7 @@ async function load() {
       const isMe      = p.name === myName;
       const medal     = MEDALS[p.rank] || '';
       const champFlag = p.predicted_champion
-        ? `${FLAGS[p.predicted_champion] || '🏳️'} ${escHtml(p.predicted_champion)}`
+        ? `${flagImg(p.predicted_champion, '20x15')} ${escHtml(p.predicted_champion)}`
         : '—';
       const penPts = p.penalty_points || 0;
       const etPts  = p.et_points || 0;
@@ -163,7 +169,7 @@ async function openDetail(participantId, participantName) {
         }
       }
 
-      const scCell  = hasResult ? (sc  === 5 ? `<span class="chip chip-gold">⭐ 5</span>` : `${sc}`) : '<span class="pending">—</span>';
+      const scCell  = hasResult ? ((sc === 5 || sc === 10) ? `<span class="chip chip-gold">⭐ ${sc}</span>` : `${sc}`) : '<span class="pending">—</span>';
       const fgmCell = hasResult ? fgm  : '<span class="pending">—</span>';
       const etCell  = isKO && hasResult ? et  : '—';
       const penCell = isKO && hasResult ? pen : '—';
@@ -184,7 +190,7 @@ async function openDetail(participantId, participantName) {
     }).join('');
 
     const champFlag  = participant.predicted_champion
-      ? `${FLAGS[participant.predicted_champion] || '🏳️'} ${escHtml(participant.predicted_champion)}`
+      ? `${flagImg(participant.predicted_champion, '20x15')} ${escHtml(participant.predicted_champion)}`
       : '—';
     const champPts   = participant.champion_points || 0;
     const grandTotal = totalPts + champPts;

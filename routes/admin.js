@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const { db, calculatePoints, recalculateChampionPoints } = require('../db');
+const { db, calculatePoints, recalculateChampionPoints, recalculateAllMatchPoints } = require('../db');
 const { authenticateAdmin } = require('../middleware');
 
 router.get('/matches', authenticateAdmin, async (req, res, next) => {
@@ -96,6 +96,13 @@ router.post('/matches/:id/result', authenticateAdmin, async (req, res, next) => 
 
     await recalculateChampionPoints();
     res.json({ success: true, predictions_updated: predictions.length });
+  } catch (e) { next(e); }
+});
+
+router.post('/recalculate-all', authenticateAdmin, async (req, res, next) => {
+  try {
+    const count = await recalculateAllMatchPoints();
+    res.json({ success: true, predictions_updated: count });
   } catch (e) { next(e); }
 });
 

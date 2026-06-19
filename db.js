@@ -109,6 +109,8 @@ async function runMigrations() {
   await add('predictions',  'points_et',                 'INTEGER DEFAULT 0');
 }
 
+const KNOCKOUT = new Set(['r32', 'r16', 'qf', 'sf', 'third', 'final']);
+
 function calculatePoints(prediction, match) {
   const ph  = Number(prediction.predicted_home_score);
   const pa  = Number(prediction.predicted_away_score);
@@ -117,15 +119,49 @@ function calculatePoints(prediction, match) {
   const aa  = Number(match.actual_away_score);
   const afg = Number(match.actual_first_goal_minute);
 
+  // Determine predicted winner (handle draw + PEN prediction)
+  let predWinner;
+  if (ph > pa) predWinner = 'home';
+  else if (ph < pa) predWinner = 'away';
+  else if (Number(prediction.predicted_penalties)) {
+    const pph = Number(prediction.predicted_penalties_home) || 0;
+    const ppa = Number(prediction.predicted_penalties_away) || 0;
+    predWinner = pph > ppa ? 'home' : pph < ppa ? 'away' : 'draw';
+  } else {
+    predWinner = 'draw';
+  }
+
+  // Determine actual winner
+  let actualWinner;
+  if (ah > aa) actualWinner = 'home';
+  else if (ah < aa) actualWinner = 'away';
+  else {
+    actualWinner = match.actual_winner
+      || (Number(match.actual_penalties) && match.actual_penalties_home != null
+          ? (Number(match.actual_penalties_home) > Number(match.actual_penalties_away) ? 'home' : 'away')
+          : 'draw');
+  }
+
+  // Score points: 5 (exact) OR 2 (correct winner) — mutually exclusive, never combined
   let scorePoints = 0;
   if (ph === ah && pa === aa) {
     scorePoints = 5;
-  } else {
-    const pred   = ph > pa ? 'home' : ph < pa ? 'away' : 'draw';
-    const actual = match.actual_winner || (ah > aa ? 'home' : ah < aa ? 'away' : 'draw');
-    if (pred === actual) scorePoints = 2;
+  } else if (predWinner === actualWinner) {
+    scorePoints = 2;
   }
 
+  // 0-0 bonus: predict 0-0 with no goals → 10 pts instead of 5
+  if (scorePoints === 5 && ah === 0 && aa === 0 && pfg === 0) scorePoints = 10;
+
+  // PEN misjudge (knockout only): predicted PEN but game was NOT decided by penalties → 1 pt instead of 2
+  if (KNOCKOUT.has(match.stage) && scorePoints === 2 &&
+      Number(prediction.predicted_penalties) && !Number(match.actual_penalties)) {
+    scorePoints = 1;
+  }
+
+  const correctWinner = predWinner === actualWinner;
+
+  // First goal points (only when correct outcome)
   let firstGoalPoints = 0;
   if (scorePoints > 0) {
     if (afg === 0)       firstGoalPoints = pfg === 0 ? 5 : 0;
@@ -133,6 +169,7 @@ function calculatePoints(prediction, match) {
     else                 firstGoalPoints = Math.max(0, 5 - Math.abs(pfg - afg));
   }
 
+  // Exact penalty shootout score
   let penaltyPoints = 0;
   if (match.actual_penalties && prediction.predicted_penalties) {
     const pph = Number(prediction.predicted_penalties_home);
@@ -142,10 +179,9 @@ function calculatePoints(prediction, match) {
     if (pph === aph && ppa === apa) penaltyPoints = 10;
   }
 
-  // 1 point for correctly predicting match timeline (FT / AET / PEN) — knockout only, winner must be correct
-  const KNOCKOUT = new Set(['r32', 'r16', 'qf', 'sf', 'third', 'final']);
+  // Timeline point (knockout only): correct FT/AET/PEN AND correct winner
   let etPoints = 0;
-  if (KNOCKOUT.has(match.stage) && scorePoints > 0) {
+  if (KNOCKOUT.has(match.stage) && scorePoints > 0 && correctWinner) {
     const predTL   = !Number(prediction.predicted_extra_time) ? 'ft'
                    : !Number(prediction.predicted_penalties)  ? 'aet' : 'pen';
     const actualTL = !Number(match.actual_extra_time) ? 'ft'
@@ -175,4 +211,24 @@ async function recalculateChampionPoints() {
   if (updates.length > 0) await db.batch(updates, 'write');
 }
 
-module.exports = { db, initDB, calculatePoints, recalculateChampionPoints };
+async function recalculateAllMatchPoints() {
+  const matches = (await db.execute('SELECT * FROM matches WHERE result_entered = 1')).rows;
+  let total = 0;
+  for (const match of matches) {
+    const preds = (await db.execute({ sql: 'SELECT * FROM predictions WHERE match_id = ?', args: [match.id] })).rows;
+    if (!preds.length) continue;
+    const stmts = preds.map(pred => {
+      const { scorePoints, firstGoalPoints, penaltyPoints, etPoints } = calculatePoints(pred, match);
+      return {
+        sql:  'UPDATE predictions SET points_score=?,points_first_goal=?,points_penalties=?,points_et=? WHERE id=?',
+        args: [scorePoints, firstGoalPoints, penaltyPoints, etPoints, pred.id],
+      };
+    });
+    await db.batch(stmts, 'write');
+    total += preds.length;
+  }
+  await recalculateChampionPoints();
+  return total;
+}
+
+module.exports = { db, initDB, calculatePoints, recalculateChampionPoints, recalculateAllMatchPoints };

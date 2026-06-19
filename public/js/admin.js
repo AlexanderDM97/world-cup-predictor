@@ -57,6 +57,21 @@ document.getElementById('btn-admin-logout').onclick = () => {
   document.getElementById('admin-ui').classList.add('hidden');
 };
 
+// ── Recalculate all points ─────────────────────────────────────────────
+async function recalculateAll() {
+  if (!confirm('Recalculate all match points using the current scoring rules?\nThis will overwrite all stored points.')) return;
+  try {
+    const res  = await fetch('/api/admin/recalculate-all', { method: 'POST', headers: { Authorization: `Bearer ${adminToken}` } });
+    const data = await res.json();
+    if (!res.ok) { showAdminAlert(data.error); return; }
+    showAdminAlert(`✅ Recalculated — ${data.predictions_updated} predictions updated.`, 'success');
+    refreshParticipants();
+  } catch {
+    showAdminAlert('Network error during recalculation.');
+  }
+}
+window.recalculateAll = recalculateAll;
+
 // ── Participants ───────────────────────────────────────────────────────
 async function refreshParticipants() {
   try {

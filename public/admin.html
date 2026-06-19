@@ -39,7 +39,10 @@
     <div id="admin-alert2" class="alert hidden"></div>
 
     <!-- Stats -->
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:.75rem;margin-bottom:1.5rem" id="stats-row"></div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:.75rem;margin-bottom:.75rem" id="stats-row"></div>
+    <div style="display:flex;justify-content:flex-end;margin-bottom:1rem">
+      <button class="btn btn-sm btn-outline" onclick="recalculateAll()" style="color:var(--muted)">🔄 Recalculate all points</button>
+    </div>
 
     <!-- Participants -->
     <div class="card mb-2">
