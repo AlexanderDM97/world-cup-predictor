@@ -301,11 +301,24 @@ async function submitResult() {
 window.submitResult = submitResult;
 
 // ── Edit modal ─────────────────────────────────────────────────────────
+function setSelectOrAddOption(selectId, value) {
+  const sel = document.getElementById(selectId);
+  sel.value = value;
+  if (sel.value !== value) {
+    // Value not in list — add a temporary option so existing data isn't lost
+    const opt = document.createElement('option');
+    opt.value = value;
+    opt.textContent = value;
+    sel.insertBefore(opt, sel.firstChild.nextSibling);
+    sel.value = value;
+  }
+}
+
 function openEdit(id) {
   const m = allMatches.find(m => m.id === id);
   document.getElementById('edit-match-id').value  = id;
-  document.getElementById('edit-home').value      = m.home_team;
-  document.getElementById('edit-away').value      = m.away_team;
+  setSelectOrAddOption('edit-home', m.home_team);
+  setSelectOrAddOption('edit-away', m.away_team);
   document.getElementById('edit-group').value     = m.group_name || '';
   document.getElementById('edit-stage').value     = m.stage;
   document.getElementById('edit-kickoff').value   = new Date(m.kickoff_time).toISOString().slice(0, 16);
