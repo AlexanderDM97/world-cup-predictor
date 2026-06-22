@@ -34,22 +34,53 @@
 
   <div class="mt-2">
     <div class="card" style="padding:.85rem 1.25rem">
-      <p class="fw-bold mb-1" style="font-size:.85rem">Scoring system</p>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.3rem .75rem;font-size:.8rem;color:var(--muted)">
-        <span>✅ Exact score</span>                  <span class="fw-bold" style="color:var(--green-dark)">5 pts</span>
-        <span>☑️ Correct winner / draw</span>        <span class="fw-bold" style="color:var(--green-dark)">2 pts</span>
-        <span>🎯 First goal (exact minute)</span>    <span class="fw-bold" style="color:var(--green-dark)">5 pts</span>
-        <span>🔸 First goal ±1 min</span>            <span class="fw-bold" style="color:var(--green-dark)">4 pts</span>
-        <span>🔸 First goal ±2 min</span>            <span class="fw-bold" style="color:var(--green-dark)">3 pts</span>
-        <span>🔸 First goal ±3 min</span>            <span class="fw-bold" style="color:var(--green-dark)">2 pts</span>
-        <span>🔸 First goal ±4 min</span>            <span class="fw-bold" style="color:var(--green-dark)">1 pt</span>
-        <span>⚪ Predicted "no goals" &amp; 0–0</span><span class="fw-bold" style="color:var(--green-dark)">5 pts</span>
-        <span>🥅 Exact penalty shootout score</span> <span class="fw-bold" style="color:var(--green-dark)">10 pts</span>
-        <span>⏱ Correct timeline (FT/AET/PEN)</span> <span class="fw-bold" style="color:var(--green-dark)">1 pt</span>
-        <span>🏆 Champion pick — each team win</span><span class="fw-bold" style="color:var(--green-dark)">+3 pts</span>
-        <span>🥇 Champion pick — wins tournament</span><span class="fw-bold" style="color:var(--green-dark)">+10 bonus</span>
+      <p class="fw-bold mb-1" style="font-size:.85rem">Puntenstelsel</p>
+
+      <!-- Group vs Knockout -->
+      <div style="display:flex;flex-wrap:wrap;gap:.75rem;margin-bottom:.75rem">
+
+        <!-- Groepsfase -->
+        <div style="flex:1;min-width:190px;background:#f4f7f4;border:1px solid var(--border);border-radius:8px;padding:.65rem .9rem">
+          <p style="font-size:.78rem;font-weight:700;color:var(--green-dark);margin:0 0 .4rem">Groepsfase</p>
+          <div style="display:grid;grid-template-columns:1fr auto;gap:.22rem .6rem;font-size:.78rem;color:var(--muted)">
+            <span>✅ Exact resultaat</span>               <span class="fw-bold" style="color:var(--green-dark)">5 pts</span>
+            <span>☑️ Correcte winnaar / gelijkspel</span> <span class="fw-bold" style="color:var(--green-dark)">2 pts</span>
+          </div>
+          <p style="font-size:.72rem;color:var(--muted);margin:.45rem 0 0">Max per wedstrijd: <strong>10 pts</strong></p>
+        </div>
+
+        <!-- Eindronde -->
+        <div style="flex:1;min-width:190px;background:#f4f7f4;border:1px solid var(--border);border-radius:8px;padding:.65rem .9rem">
+          <p style="font-size:.78rem;font-weight:700;color:var(--green-dark);margin:0 0 .4rem">Eindronde</p>
+          <div style="display:grid;grid-template-columns:1fr auto;gap:.22rem .6rem;font-size:.78rem;color:var(--muted)">
+            <span>✅ Exact resultaat + winnaar</span>       <span class="fw-bold" style="color:var(--green-dark)">8 pts</span>
+            <span>☑️ Correcte winnaar alleen</span>         <span class="fw-bold" style="color:var(--green-dark)">3 pts</span>
+            <span>⏱ Tijdlijn correct (FT/ET/Pen)</span>    <span class="fw-bold" style="color:var(--green-dark)">1 pt</span>
+            <span style="color:#888;font-size:.73rem;padding-left:.5rem">onafhankelijk van de winnaar</span><span></span>
+            <span>🏅 Penalty-bonus <small style="font-weight:normal">(predict + actual Pen + winnaar)</small></span><span class="fw-bold" style="color:var(--green-dark)">+1 pt</span>
+            <span>🥅 Exacte penaltyscore</span>             <span class="fw-bold" style="color:var(--green-dark)">10 pts</span>
+          </div>
+          <p style="font-size:.72rem;color:var(--muted);margin:.45rem 0 0">Max FT/ET: <strong>9 pts</strong> · Max Pen (perfect): <strong>20 pts</strong></p>
+        </div>
       </div>
-      <p style="font-size:.75rem;color:var(--muted);margin-top:.6rem">Max per match: <strong>10 pts</strong> · Knockout: up to <strong>21 pts</strong> (+10 penalties, +1 timeline) · Timeline point requires correct winner</p>
+
+      <!-- Eerste doelminuut -->
+      <div style="border-top:1px solid var(--border);padding-top:.55rem;margin-bottom:.55rem">
+        <p style="font-size:.78rem;font-weight:700;color:var(--green-dark);margin:0 0 .3rem">⚽ Eerste doelminuut — groepsfase &amp; eindronde (alleen bij correcte winnaar)</p>
+        <div style="display:flex;flex-wrap:wrap;gap:.15rem .9rem;font-size:.78rem;color:var(--muted)">
+          <span>🎯 Exacte minuut: <strong style="color:var(--green-dark)">5 pts</strong></span>
+          <span>🔸 ±1 min: <strong style="color:var(--green-dark)">4 pts</strong></span>
+          <span>🔸 ±2 min: <strong style="color:var(--green-dark)">3 pts</strong></span>
+          <span>🔸 ±3 min: <strong style="color:var(--green-dark)">2 pts</strong></span>
+          <span>🔸 ±4 min: <strong style="color:var(--green-dark)">1 pt</strong></span>
+          <span>⚪ Geen doelpunten &amp; 0–0: <strong style="color:var(--green-dark)">5 pts</strong></span>
+        </div>
+      </div>
+
+      <!-- Kampioensvoorspelling -->
+      <div style="border-top:1px solid var(--border);padding-top:.55rem;font-size:.78rem;color:var(--muted)">
+        <span>🏆 Kampioensvoorspelling: <strong style="color:var(--green-dark)">+3 pts</strong> per gewonnen wedstrijd · <strong style="color:var(--green-dark)">+10 bonus</strong> bij toernooiwinst</span>
+      </div>
     </div>
   </div>
 </div>
