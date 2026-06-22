@@ -118,8 +118,9 @@ function calculatePoints(prediction, match) {
   const ah  = Number(match.actual_home_score);
   const aa  = Number(match.actual_away_score);
   const afg = Number(match.actual_first_goal_minute);
+  const isKO = KNOCKOUT.has(match.stage);
 
-  // Determine predicted winner (handle draw + PEN prediction)
+  // Determine predicted winner
   let predWinner;
   if (ph > pa) predWinner = 'home';
   else if (ph < pa) predWinner = 'away';
@@ -142,24 +143,19 @@ function calculatePoints(prediction, match) {
           : 'draw');
   }
 
-  // Score points: 5 (exact) OR 2 (correct winner) — mutually exclusive, never combined
-  let scorePoints = 0;
-  if (ph === ah && pa === aa) {
-    scorePoints = 5;
-  } else if (predWinner === actualWinner) {
-    scorePoints = 2;
-  }
-
-  // 0-0 bonus: predict 0-0 with no goals → 10 pts instead of 5
-  if (scorePoints === 5 && ah === 0 && aa === 0 && pfg === 0) scorePoints = 10;
-
-  // PEN misjudge (knockout only): predicted PEN but game was NOT decided by penalties → 1 pt instead of 2
-  if (KNOCKOUT.has(match.stage) && scorePoints === 2 &&
-      Number(prediction.predicted_penalties) && !Number(match.actual_penalties)) {
-    scorePoints = 1;
-  }
-
+  const exactScore    = ph === ah && pa === aa;
   const correctWinner = predWinner === actualWinner;
+
+  // Score points:
+  // Knockout (per puntenboom): 3 pt winner + 5 pt extra for exact score (stacked)
+  // Group stage: 5 pt exact OR 2 pt correct winner — mutually exclusive
+  let scorePoints = 0;
+  if (isKO) {
+    if (correctWinner) scorePoints = exactScore ? 8 : 3;
+  } else {
+    if (exactScore)         scorePoints = 5;
+    else if (correctWinner) scorePoints = 2;
+  }
 
   // First goal points (only when correct outcome)
   let firstGoalPoints = 0;
@@ -169,7 +165,7 @@ function calculatePoints(prediction, match) {
     else                 firstGoalPoints = Math.max(0, 5 - Math.abs(pfg - afg));
   }
 
-  // Exact penalty shootout score
+  // Exact penalty shootout score (10 pt per user rule)
   let penaltyPoints = 0;
   if (match.actual_penalties && prediction.predicted_penalties) {
     const pph = Number(prediction.predicted_penalties_home);
@@ -179,14 +175,16 @@ function calculatePoints(prediction, match) {
     if (pph === aph && ppa === apa) penaltyPoints = 10;
   }
 
-  // Timeline point (knockout only): correct FT/AET/PEN AND correct winner
+  // Timeline point (knockout only) — INDEPENDENT of winner
+  // + penalty winner bonus (+1 when predict PEN + actual PEN + correct winner)
   let etPoints = 0;
-  if (KNOCKOUT.has(match.stage) && scorePoints > 0 && correctWinner) {
+  if (isKO) {
     const predTL   = !Number(prediction.predicted_extra_time) ? 'ft'
                    : !Number(prediction.predicted_penalties)  ? 'aet' : 'pen';
     const actualTL = !Number(match.actual_extra_time) ? 'ft'
                    : !Number(match.actual_penalties)  ? 'aet' : 'pen';
     if (predTL === actualTL) etPoints = 1;
+    if (predTL === 'pen' && actualTL === 'pen' && correctWinner) etPoints += 1;
   }
 
   return { scorePoints, firstGoalPoints, penaltyPoints, etPoints };

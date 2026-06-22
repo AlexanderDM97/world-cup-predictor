@@ -209,7 +209,7 @@ function renderMatch(m) {
 
     let ptsHTML = '';
     if (status === 'done') {
-      const scoreChip = (ptScore === 5 || ptScore === 10)
+      const scoreChip = (ptScore === 5 || ptScore === 8)
         ? `<span class="chip chip-gold">⭐ ${ptScore} pts</span>`
         : `<span class="chip chip-score">${ptScore ?? '—'} pts</span>`;
       ptsHTML = `

@@ -169,7 +169,7 @@ async function openDetail(participantId, participantName) {
         }
       }
 
-      const scCell  = hasResult ? ((sc === 5 || sc === 10) ? `<span class="chip chip-gold">⭐ ${sc}</span>` : `${sc}`) : '<span class="pending">—</span>';
+      const scCell  = hasResult ? ((sc === 5 || sc === 8) ? `<span class="chip chip-gold">⭐ ${sc}</span>` : `${sc}`) : '<span class="pending">—</span>';
       const fgmCell = hasResult ? fgm  : '<span class="pending">—</span>';
       const etCell  = isKO && hasResult ? et  : '—';
       const penCell = isKO && hasResult ? pen : '—';
